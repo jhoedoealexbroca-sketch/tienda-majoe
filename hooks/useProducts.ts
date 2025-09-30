@@ -52,7 +52,7 @@ export const useProducts = () => {
   }
 
   // Actualizar producto
-  const handleUpdateProduct = async (id: string, updates: Partial<Product>): Promise<Product | null> => {
+  const handleUpdateProduct = async (id: string, updates: Omit<Product, 'id'>): Promise<Product | null> => {
     try {
       setError(null)
       const updatedProduct = updateProduct(id, updates)
@@ -86,9 +86,24 @@ export const useProducts = () => {
   }
 
   // Buscar productos
-  const handleSearchProducts = (query: string, category?: 'men' | 'women'): Product[] => {
+  const handleSearchProducts = (query: string, category?: 'men' | 'women' | 'kids-boys' | 'kids-girls'): Product[] => {
     try {
-      return searchProducts(query, category)
+      const allProducts = getProducts()
+      let filteredProducts = allProducts
+      
+      if (category) {
+        filteredProducts = allProducts.filter(product => product.category === category)
+      }
+      
+      if (query) {
+        filteredProducts = filteredProducts.filter(product => 
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.description.toLowerCase().includes(query.toLowerCase()) ||
+          product.subcategory.toLowerCase().includes(query.toLowerCase())
+        )
+      }
+      
+      return filteredProducts
     } catch (err) {
       setError('Error en la búsqueda')
       console.error('Error searching products:', err)
