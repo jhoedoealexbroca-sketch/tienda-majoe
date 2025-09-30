@@ -1,81 +1,74 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please define the MONGODB_URI environment variable inside .env');
+const MONGODB_URI = process.env.MONGODB_URI
+
+if (!MONGODB_URI) {
+  throw new Error('Please define the MONGODB_URI environment variable inside .env')
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-interface MongooseCache {
-  conn: typeof mongoose | null;
-  promise: Promise<typeof mongoose> | null;
-}
-
+// Declarar el tipo global para mongoose
 declare global {
-  var mongooseCache: MongooseCache | undefined;
-}
-
-const cached = global.mongooseCache || { conn: null, promise: null };
-
-if (!global.mongooseCache) {
-  global.mongooseCache = cached;
-}
-
-async function dbConnect() {
-  try {
-    // En producción, verificar si ya hay conexión activa
-    if (cached.conn && mongoose.connection.readyState === 1) {
-      console.log('Usando conexión existente a MongoDB');
-      return cached.conn;
-    }
-
-    if (!cached.promise) {
-      console.log('Iniciando nueva conexión a MongoDB...');
-      const opts = {
-        maxPoolSize: 10,
-        serverSelectionTimeoutMS: 15000, // Más tiempo para conexión inicial
-        socketTimeoutMS: 45000,
-        bufferCommands: false,
-        // Opciones adicionales para producción
-        maxIdleTimeMS: 30000,
-        retryWrites: true,
-        // Opciones adicionales para problemas de autenticación
-        authSource: 'admin',
-        ssl: true
-      };
-
-      cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-        console.log('Conexión a MongoDB establecida exitosamente');
-        return mongoose;
-      });
-    }
-
-    try {
-      cached.conn = await cached.promise;
-      
-      // Verificar el estado de la conexión
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error('La conexión a MongoDB no está activa');
-      }
-      
-      return cached.conn;
-    } catch (e) {
-      console.error('Error al establecer conexión:', e);
-      cached.promise = null;
-      cached.conn = null;
-      throw e;
-    }
-  } catch (error) {
-    console.error('Error crítico en dbConnect:', error);
-    cached.promise = null;
-    cached.conn = null;
-    
-    // En producción, lanzar error más descriptivo
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error(`Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-    throw error;
+  var mongoose: {
+    conn: any | null
+    promise: Promise<any> | null
   }
 }
 
-export default dbConnect;
+/**
+ * Global is used here to maintain a cached connection across hot reloads
+ * in development. This prevents connections growing exponentially
+ * during API Route usage.
+ */
+let cached = global.mongoose
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null }
+}
+
+async function dbConnect() {
+  // Si ya tenemos una conexión activa, la usamos
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    console.log('Usando conexión existente a MongoDB')
+    return cached.conn
+  }
+
+  // Si no hay promesa de conexión, creamos una nueva
+  if (!cached.promise) {
+    console.log('Creando nueva conexión a MongoDB...')
+    console.log('MONGODB_URI configurado:', !!MONGODB_URI)
+    
+    const opts: mongoose.ConnectOptions = {
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      family: 4, // Usar IPv4
+    }
+
+    // Opciones adicionales para producción
+    if (process.env.NODE_ENV === 'production') {
+      opts.retryWrites = true
+      opts.w = 'majority'
+    }
+    
+    cached.promise = mongoose.connect(MONGODB_URI!, opts)
+  }
+
+  try {
+    console.log('Esperando conexión a MongoDB...')
+    cached.conn = await cached.promise
+    
+    console.log('Conexión establecida. Estado:', mongoose.connection.readyState)
+    console.log('Base de datos:', mongoose.connection.name)
+    
+    return cached.conn
+  } catch (error) {
+    console.error('Error al conectar a MongoDB:', error)
+    // Limpiar cache en caso de error
+    cached.promise = null
+    cached.conn = null
+    throw new Error(`Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+  }
+}
+
+export default dbConnect

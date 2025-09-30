@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid'
 export async function GET() {
   try {
     console.log('API: Iniciando GET /api/products')
+    console.log('API: NODE_ENV:', process.env.NODE_ENV)
+    console.log('API: MONGODB_URI exists:', !!process.env.MONGODB_URI)
     
     // Importación dinámica para evitar ejecución en build time
     const { validateEnvironment } = await import('@/lib/env-check')
@@ -16,22 +18,31 @@ export async function GET() {
       console.error('API: Environment validation failed:', envValidation.errors)
       return NextResponse.json({ 
         error: 'Server configuration error',
-        message: 'Environment variables not properly configured'
+        message: 'Environment variables not properly configured',
+        details: envValidation.errors
       }, { status: 500 })
     }
     
+    console.log('API: Intentando conectar a MongoDB...')
     await dbConnect()
-    console.log('API: Conexión a BD establecida')
+    console.log('API: Conexión a BD establecida exitosamente')
     
+    console.log('API: Buscando productos en la base de datos...')
     const products = await ProductModel.find({})
     console.log(`API: ${products.length} productos encontrados`)
     
     return NextResponse.json(products)
   } catch (error) {
-    console.error('API Error fetching products:', error)
+    console.error('API Error detallado:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown error type'
+    })
+    
     return NextResponse.json({ 
       error: 'Error fetching products',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
     }, { status: 500 })
   }
 }
