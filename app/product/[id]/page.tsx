@@ -20,7 +20,7 @@ import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroico
 import Link from 'next/link'
 import { useCartStore } from '@/store/cart'
 import ProductGrid from '@/components/ProductGrid'
-import { getProductById, getProducts } from '@/lib/hybridStorage'
+// import { getProductById, getProducts } from '@/lib/hybridStorage'
 import { Product } from '@/types'
 
 const ProductDetailPage = () => {
@@ -46,21 +46,28 @@ const ProductDetailPage = () => {
       setIsLoading(true)
       setError(null)
       try {
-        const foundProduct = await getProductById(productId)
+        // Cargar producto específico
+        const productResponse = await fetch(`/api/products/${productId}`)
+        if (!productResponse.ok) {
+          throw new Error('Producto no encontrado')
+        }
+        const foundProduct = await productResponse.json()
         setProduct(foundProduct)
         
         if (foundProduct) {
-          const allProducts = await getProducts()
-          const related = allProducts
-            .filter(p => p.id !== productId && p.category === foundProduct.category)
-            .slice(0, 4)
-          setRelatedProducts(related)
-        } else {
-          setError('Producto no encontrado')
+          // Cargar todos los productos para obtener relacionados
+          const allProductsResponse = await fetch('/api/products')
+          if (allProductsResponse.ok) {
+            const allProducts = await allProductsResponse.json()
+            const related = allProducts
+              .filter((p: Product) => p.id !== productId && p.category === foundProduct.category)
+              .slice(0, 4)
+            setRelatedProducts(related)
+          }
         }
       } catch (error) {
         console.error('Error loading product:', error)
-        setError('Error al cargar el producto')
+        setError(error instanceof Error ? error.message : 'Error al cargar el producto')
       } finally {
         setIsLoading(false)
       }
