@@ -4,15 +4,52 @@ import { v4 as uuidv4 } from 'uuid'
 const STORAGE_KEY = 'majoe_products'
 const BACKUP_KEY = 'majoe_products_backup'
 
+// Función para validar la categoría del producto
+const isValidCategory = (category: string): category is Product['category'] => {
+  return ['men', 'women', 'kids-boys', 'kids-girls'].includes(category)
+}
+
+// Función para validar y convertir un producto
+const validateProduct = (product: any): Product => {
+  if (!product || typeof product !== 'object') throw new Error('Invalid product data')
+
+  if (!isValidCategory(product.category)) {
+    throw new Error(`Invalid category: ${product.category}`)
+  }
+
+  return {
+    id: String(product.id),
+    name: String(product.name),
+    price: Number(product.price),
+    originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
+    description: String(product.description),
+    category: product.category,
+    subcategory: String(product.subcategory),
+    images: Array.isArray(product.images) ? product.images.map(String) : [],
+    sizes: Array.isArray(product.sizes) ? product.sizes : [],
+    colors: Array.isArray(product.colors) ? product.colors : [],
+    stock: Number(product.stock),
+    featured: Boolean(product.featured),
+    isNew: Boolean(product.isNew),
+    onSale: Boolean(product.onSale)
+  }
+}
+
+// Función para validar un array de productos
+const validateProducts = (products: any[]): Product[] => {
+  return products.map(validateProduct)
+}
+
 // Función para sincronizar con un archivo remoto (simulado)
-const syncWithRemote = async (products: Product[]) => {
+const syncWithRemote = async (products: any[]) => {
   try {
+    const validatedProducts = validateProducts(products)
     // En un entorno real, aquí harías una llamada a tu API
     // Por ahora, guardamos en localStorage como backup
-    localStorage.setItem(BACKUP_KEY, JSON.stringify(products))
+    localStorage.setItem(BACKUP_KEY, JSON.stringify(validatedProducts))
     
     // También podrías enviar a un servicio como Firebase, Supabase, etc.
-    console.log('Productos sincronizados:', products.length)
+    console.log('Productos sincronizados:', validatedProducts.length)
   } catch (error) {
     console.error('Error sincronizando productos:', error)
   }
@@ -26,8 +63,9 @@ const initializeProducts = () => {
       // Cargar productos iniciales desde el archivo JSON
       try {
         import('@/data/products.json').then((productsData) => {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData.default))
-          syncWithRemote(productsData.default)
+          const validatedProducts = validateProducts(productsData.default)
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedProducts))
+          syncWithRemote(validatedProducts)
         }).catch((error) => {
           console.error('Error loading initial products:', error)
         })
