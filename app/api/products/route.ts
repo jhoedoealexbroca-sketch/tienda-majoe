@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     console.log('API: Iniciando GET /api/products')
-    console.log('API: NODE_ENV:', process.env.NODE_ENV)
-    console.log('API: MONGODB_URI exists:', !!process.env.MONGODB_URI)
+    
+    // Obtener parámetros de consulta
+    const { searchParams } = new URL(request.url)
+    const category = searchParams.get('category')
+    const featured = searchParams.get('featured')
+    const newProduct = searchParams.get('new')
+    const onSale = searchParams.get('sale')
+    
+    console.log('API: Filtros aplicados:', { category, featured, newProduct, onSale })
     
     // Importación dinámica para evitar ejecución en build time
     const { validateEnvironment } = await import('@/lib/env-check')
@@ -27,8 +34,27 @@ export async function GET() {
     await dbConnect()
     console.log('API: Conexión a BD establecida exitosamente')
     
-    console.log('API: Buscando productos en la base de datos...')
-    const products = await ProductModel.find({})
+    // Construir filtros de consulta
+    const filters: any = {}
+    
+    if (category) {
+      filters.category = category
+    }
+    
+    if (featured === 'true') {
+      filters.featured = true
+    }
+    
+    if (newProduct === 'true') {
+      filters.newProduct = true
+    }
+    
+    if (onSale === 'true') {
+      filters.onSale = true
+    }
+    
+    console.log('API: Buscando productos con filtros:', filters)
+    const products = await ProductModel.find(filters)
     console.log(`API: ${products.length} productos encontrados`)
     
     return NextResponse.json(products)

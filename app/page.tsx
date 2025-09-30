@@ -5,14 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRightIcon, SparklesIcon, TruckIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 import ProductGrid from '@/components/ProductGrid'
-import { useProducts } from '@/hooks/useProducts'
+import { useCategoryProducts } from '@/hooks/useCategoryProducts'
 
 const HomePage = () => {
-  const { products, loading, error } = useProducts()
-
-  // Evitar acceder a products si está cargando o hay un error
-  const featuredProducts = !loading && !error ? products.filter(product => product.featured) : []
-  const newProducts = !loading && !error ? products.filter(product => product.newProduct) : []
+  const { products: featuredProducts, loading, error } = useCategoryProducts({ featured: true })
+  const { products: newProducts } = useCategoryProducts({ newProduct: true })
 
   if (loading) {
     return (

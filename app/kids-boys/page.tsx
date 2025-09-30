@@ -1,18 +1,14 @@
-'use client'
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { FunnelIcon } from '@heroicons/react/24/outline'
 import ProductGrid from '@/components/ProductGrid'
-import { useProducts } from '@/hooks/useProducts'
+import { useCategoryProducts } from '@/hooks/useCategoryProducts'
 
 const KidsBoysPage = () => {
-  const { products } = useProducts()
+  const { products: kidsBoysProducts, loading } = useCategoryProducts({ category: 'kids-boys' })
   const [sortBy, setSortBy] = useState('featured')
   const [filterBy, setFilterBy] = useState('all')
-  
-  // Filter products for kids boys
-  const kidsBoysProducts = products.filter(product => product.category === 'kids-boys')
   
   // Get unique subcategories
   const subcategories = Array.from(new Set(kidsBoysProducts.map(p => p.subcategory)))

@@ -2,11 +2,10 @@
 
 import { motion } from 'framer-motion'
 import ProductGrid from '@/components/ProductGrid'
-import { useProducts } from '@/hooks/useProducts'
+import { useCategoryProducts } from '@/hooks/useCategoryProducts'
 
 const SalePage = () => {
-  const { products } = useProducts()
-  const saleProducts = products.filter(product => product.onSale)
+  const { products: saleProducts, loading } = useCategoryProducts({ onSale: true })
 
   return (
     <div className="pt-20">
