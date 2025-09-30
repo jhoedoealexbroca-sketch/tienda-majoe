@@ -26,13 +26,45 @@ export async function connectToDatabase() {
 export async function getProducts(): Promise<Product[]> {
   const { db } = await connectToDatabase()
   const products = await db.collection('products').find({}).toArray()
-  return products as Product[]
+  return products.map(product => ({
+    id: product.id || product._id.toString(),
+    name: product.name,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    description: product.description,
+    category: product.category,
+    subcategory: product.subcategory,
+    images: product.images,
+    sizes: product.sizes,
+    colors: product.colors,
+    stock: product.stock,
+    featured: product.featured,
+    isNew: product.isNew,
+    onSale: product.onSale
+  }))
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
   const { db } = await connectToDatabase()
   const product = await db.collection('products').findOne({ id })
-  return product as Product | null
+  if (!product) return null
+  
+  return {
+    id: product.id || product._id.toString(),
+    name: product.name,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    description: product.description,
+    category: product.category,
+    subcategory: product.subcategory,
+    images: product.images,
+    sizes: product.sizes,
+    colors: product.colors,
+    stock: product.stock,
+    featured: product.featured,
+    isNew: product.isNew,
+    onSale: product.onSale
+  }
 }
 
 export async function addProduct(product: Omit<Product, 'id'>): Promise<Product> {
