@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb'
-import ProductModel from '@/models/Product'
 import { v4 as uuidv4 } from 'uuid'
-import { validateEnvironment } from '@/lib/env-check'
 
 export async function GET() {
   try {
     console.log('API: Iniciando GET /api/products')
+    
+    // Importación dinámica para evitar ejecución en build time
+    const { validateEnvironment } = await import('@/lib/env-check')
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
     
     // Validar entorno
     const envValidation = validateEnvironment()
@@ -37,6 +39,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     console.log('API: Iniciando POST /api/products')
+    
+    // Importación dinámica para evitar ejecución en build time
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
+    
     await dbConnect()
     
     const body = await request.json()

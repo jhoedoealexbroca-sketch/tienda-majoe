@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb'
-import ProductModel from '@/models/Product'
 
 export async function GET() {
   try {
     console.log('API: Iniciando exportación de productos')
+    
+    // Importación dinámica para evitar ejecución en build time
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
+    
     await dbConnect()
     
     const products = await ProductModel.find({})

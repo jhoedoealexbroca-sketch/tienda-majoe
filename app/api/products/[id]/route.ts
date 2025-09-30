@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import dbConnect from '@/lib/mongodb'
-import ProductModel from '@/models/Product'
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Importación dinámica para evitar ejecución en build time
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
+    
     await dbConnect()
     const product = await ProductModel.findOne({ id: params.id })
     if (!product) {
@@ -30,6 +32,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Importación dinámica para evitar ejecución en build time
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
+    
     await dbConnect()
     const data = await req.json()
     const product = await ProductModel.findOneAndUpdate(
@@ -58,6 +64,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Importación dinámica para evitar ejecución en build time
+    const { default: dbConnect } = await import('@/lib/mongodb')
+    const { default: ProductModel } = await import('@/models/Product')
+    
     await dbConnect()
     const product = await ProductModel.findOneAndDelete({ id: params.id })
     if (!product) {
