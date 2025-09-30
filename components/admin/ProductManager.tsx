@@ -27,7 +27,8 @@ const ProductManager = () => {
     deleteProduct,
     refreshProducts 
   } = useProducts()
-  
+
+  // Todos los hooks deben estar al inicio del componente
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -37,6 +38,51 @@ const ProductManager = () => {
     type: 'success' | 'error'
     message: string
   } | null>(null)
+
+  // Todos los useEffect deben estar al inicio
+  useEffect(() => {
+    if (error) {
+      setNotification({
+        type: 'error',
+        message: error
+      })
+    }
+  }, [error])
+
+  useEffect(() => {
+    // Solo ejecutar una vez al montar el componente
+    refreshProducts()
+  }, []) // Array vacío para ejecutar solo una vez
+
+  // Mostrar estado de carga
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-luxury-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-luxury-600">Cargando productos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto" />
+          <p className="text-red-600">Error: {error}</p>
+          <button 
+            onClick={() => refreshProducts()}
+            className="px-4 py-2 bg-luxury-500 text-white rounded-lg hover:bg-luxury-600"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-PE', {
@@ -121,17 +167,6 @@ const ProductManager = () => {
     if (stock === 0) return { text: 'Sin Stock', color: 'bg-red-100 text-red-800' }
     if (stock < 5) return { text: 'Stock Bajo', color: 'bg-orange-100 text-orange-800' }
     return { text: 'En Stock', color: 'bg-green-100 text-green-800' }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-luxury-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-luxury-600">Cargando productos...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -231,6 +266,9 @@ const ProductManager = () => {
               <AnimatePresence>
                 {filteredProducts.map((product, index) => {
                   const stockStatus = getStockStatus(product.stock)
+                  const productFeatures = []
+                  if (product.newProduct) productFeatures.push('Nuevo')
+                  if (product.onSale) productFeatures.push('Oferta')
                   return (
                     <motion.tr
                       key={product.id}
@@ -311,16 +349,18 @@ const ProductManager = () => {
                           {stockStatus.text}
                         </span>
                         <div className="flex items-center space-x-1 mt-1">
-                          {product.isNew && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                              Nuevo
+                          {productFeatures.map((feature, i) => (
+                            <span 
+                              key={i}
+                              className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                                feature === 'Nuevo' 
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {feature}
                             </span>
-                          )}
-                          {product.onSale && (
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                              Oferta
-                            </span>
-                          )}
+                          ))}
                         </div>
                       </td>
 

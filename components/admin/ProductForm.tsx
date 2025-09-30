@@ -28,7 +28,7 @@ const ProductForm = ({ product, onSave, onCancel, loading = false }: ProductForm
     subcategory: '',
     stock: '',
     featured: false,
-    isNew: false,
+    newProduct: false,
     onSale: false
   })
 
@@ -55,7 +55,7 @@ const ProductForm = ({ product, onSave, onCancel, loading = false }: ProductForm
         subcategory: product.subcategory,
         stock: product.stock.toString(),
         featured: product.featured || false,
-        isNew: product.isNew || false,
+        newProduct: product.newProduct || false,
         onSale: product.onSale || false
       })
       setImages(product.images.length > 0 ? product.images : [''])
@@ -120,7 +120,7 @@ const ProductForm = ({ product, onSave, onCancel, loading = false }: ProductForm
       colors: colors.filter(color => color.name && color.value),
       stock: parseInt(formData.stock),
       featured: formData.featured,
-      isNew: formData.isNew,
+      newProduct: formData.newProduct,
       onSale: formData.onSale
     }
 
@@ -288,8 +288,8 @@ const ProductForm = ({ product, onSave, onCancel, loading = false }: ProductForm
                   <label className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      name="isNew"
-                      checked={formData.isNew}
+                      name="newProduct"
+                      checked={formData.newProduct}
                       onChange={handleInputChange}
                       className="rounded border-luxury-300 text-luxury-600 focus:ring-luxury-500"
                     />

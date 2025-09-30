@@ -7,7 +7,7 @@ import { HeartIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { useState, useEffect } from 'react'
 import { Product } from '@/types'
-import { getProducts } from '@/lib/productStorage'
+import { getProducts } from '@/lib/hybridStorage'
 
 interface ProductGridProps {
   products: Product[]
@@ -64,7 +64,7 @@ const ProductGrid = ({ products, columns = 5 }: ProductGridProps) => {
               
               {/* Badges */}
               <div className="absolute top-3 left-3 flex flex-col space-y-2">
-                {product.isNew && (
+                {product.newProduct && (
                   <span className="badge-new">
                     Nuevo
                   </span>

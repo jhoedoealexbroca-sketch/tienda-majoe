@@ -1,9 +1,8 @@
 import { Product } from '@/types'
 import { v4 as uuidv4 } from 'uuid'
 import productsData from '@/data/products.json'
-
-const STORAGE_KEY = 'majoe_products'
-const BACKUP_KEY = 'majoe_products_backup'
+import ProductModel from '@/models/Product'
+import dbConnect from './mongodb'
 
 // Función para validar la categoría del producto
 const isValidCategory = (category: string): category is Product['category'] => {
@@ -31,7 +30,7 @@ const validateProduct = (product: any): Product => {
     colors: Array.isArray(product.colors) ? product.colors : [],
     stock: Number(product.stock),
     featured: Boolean(product.featured),
-    isNew: Boolean(product.isNew),
+    newProduct: Boolean(product.newProduct || product.isNew),
     onSale: Boolean(product.onSale)
   }
 }
@@ -41,104 +40,113 @@ const validateProducts = (products: any[]): Product[] => {
   return products.map(validateProduct)
 }
 
-// Función para sincronizar con almacenamiento
-const syncWithStorage = (products: Product[]): void => {
-  if (typeof window === 'undefined') return
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
-  localStorage.setItem(BACKUP_KEY, JSON.stringify(products))
-}
-
-// Inicializar productos
-const initializeProducts = (): void => {
-  if (typeof window === 'undefined') return
+// Inicializar productos en MongoDB si no existen
+const initializeProducts = async (): Promise<void> => {
+  await dbConnect()
+  const count = await ProductModel.countDocuments()
   
-  const existingProducts = localStorage.getItem(STORAGE_KEY)
-  if (!existingProducts) {
+  if (count === 0) {
     const validatedProducts = validateProducts(productsData)
-    syncWithStorage(validatedProducts)
+    await ProductModel.insertMany(validatedProducts)
   }
 }
 
 // Inicializar al cargar el módulo
-if (typeof window !== 'undefined') {
-  initializeProducts()
+let initialized = false
+const ensureInitialized = async () => {
+  if (!initialized) {
+    await initializeProducts()
+    initialized = true
+  }
 }
 
 // Funciones exportadas
-export const getProducts = (): Product[] => {
-  if (typeof window === 'undefined') return validateProducts(productsData)
+export const getProducts = async (): Promise<Product[]> => {
+  await ensureInitialized()
+  await dbConnect()
   
-  const productsJson = localStorage.getItem(STORAGE_KEY)
-  if (productsJson) {
-    try {
-      const parsedProducts = JSON.parse(productsJson)
-      return validateProducts(parsedProducts)
-    } catch (error) {
-      console.error('Error parsing products:', error)
-      return validateProducts(productsData)
-    }
-  }
-  
-  return validateProducts(productsData)
+  const products = await ProductModel.find({})
+  return products.map(p => validateProduct(p.toObject()))
 }
 
-export const getProductById = (id: string): Product | undefined => {
-  const products = getProducts()
-  return products.find(product => product.id === id)
+export const getProductById = async (id: string): Promise<Product | null> => {
+  await ensureInitialized()
+  await dbConnect()
+  
+  const product = await ProductModel.findOne({ id })
+  return product ? validateProduct(product.toObject()) : null
 }
 
-export const addProduct = (productData: Omit<Product, 'id'>): Product => {
+export const addProduct = async (productData: Omit<Product, 'id'>): Promise<Product> => {
+  await ensureInitialized()
+  await dbConnect()
+  
   const newProduct = validateProduct({
     ...productData,
     id: uuidv4()
   })
   
-  const products = getProducts()
-  const updatedProducts = [...products, newProduct]
-  syncWithStorage(updatedProducts)
+  const product = new ProductModel(newProduct)
+  await product.save()
   return newProduct
 }
 
-export const updateProduct = (id: string, productData: Partial<Product>): Product | undefined => {
-  const products = getProducts()
-  const index = products.findIndex(p => p.id === id)
+export const updateProduct = async (id: string, productData: Partial<Product>): Promise<Product | null> => {
+  await ensureInitialized()
+  await dbConnect()
   
-  if (index === -1) return undefined
+  const product = await ProductModel.findOne({ id })
+  if (!product) return null
   
-  const updatedProduct = validateProduct({
-    ...products[index],
-    ...productData,
-    id // Mantener el ID original
-  })
-  
-  products[index] = updatedProduct
-  syncWithStorage(products)
-  return updatedProduct
+  Object.assign(product, productData)
+  await product.save()
+  return validateProduct(product.toObject())
 }
 
-export const deleteProduct = (id: string): boolean => {
-  const products = getProducts()
-  const filteredProducts = products.filter(p => p.id !== id)
+export const deleteProduct = async (id: string): Promise<boolean> => {
+  await ensureInitialized()
+  await dbConnect()
   
-  if (filteredProducts.length === products.length) return false
-  
-  syncWithStorage(filteredProducts)
-  return true
+  const result = await ProductModel.deleteOne({ id })
+  return result.deletedCount > 0
 }
 
-export const exportProducts = (): string => {
-  const products = getProducts()
+export const exportProducts = async (): Promise<string> => {
+  const products = await getProducts()
   return JSON.stringify(products, null, 2)
 }
 
-export const importProducts = (jsonString: string): boolean => {
+export const importProducts = async (jsonString: string): Promise<boolean> => {
   try {
-    const products = JSON.parse(jsonString)
-    const validatedProducts = validateProducts(products)
-    syncWithStorage(validatedProducts)
+    const products = validateProducts(JSON.parse(jsonString))
+    await dbConnect()
+    await ProductModel.deleteMany({}) // Limpiar datos existentes
+    await ProductModel.insertMany(products)
     return true
   } catch (error) {
     console.error('Error importing products:', error)
     return false
+  }
+}
+
+// Función para migrar datos existentes del localStorage a MongoDB
+export const migrateFromLocalStorage = async (): Promise<void> => {
+  if (typeof window === 'undefined') return
+  
+  const localData = localStorage.getItem('majoe_products')
+  if (localData) {
+    try {
+      const products = validateProducts(JSON.parse(localData))
+      await dbConnect()
+      await ProductModel.deleteMany({}) // Limpiar datos existentes
+      await ProductModel.insertMany(products)
+      
+      // Limpiar localStorage después de migrar
+      localStorage.removeItem('majoe_products')
+      localStorage.removeItem('majoe_products_backup')
+    } catch (error) {
+      console.error('Error migrating data:', error)
+      throw error
+    }
   }
 }

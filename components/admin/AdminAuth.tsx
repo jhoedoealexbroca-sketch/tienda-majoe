@@ -26,17 +26,31 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
     setIsLoading(true)
     setError('')
 
-    // Simular delay de autenticación
-    await new Promise(resolve => setTimeout(resolve, 1000))
-
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-      localStorage.setItem('admin_authenticated', 'true')
-      onAuthenticated()
-    } else {
-      setError('Credenciales incorrectas')
+    console.log('AdminAuth: Iniciando autenticación')
+    try {
+      // Validación local de credenciales
+      console.log('AdminAuth: Verificando credenciales...')
+      if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+        console.log('AdminAuth: Credenciales correctas')
+        try {
+          if (typeof window !== 'undefined' && window.localStorage) {
+            localStorage.setItem('admin_authenticated', 'true')
+          }
+        } catch (storageError) {
+          console.warn('AdminAuth: Error al guardar en localStorage:', storageError)
+        }
+        onAuthenticated()
+      } else {
+        console.log('AdminAuth: Credenciales incorrectas')
+        setError('Credenciales incorrectas')
+      }
+    } catch (error) {
+      console.error('AdminAuth: Error de autenticación:', error)
+      setError('Error al intentar autenticar')
+    } finally {
+      console.log('AdminAuth: Finalizando proceso de autenticación')
+      setIsLoading(false)
     }
-
-    setIsLoading(false)
   }
 
   return (
@@ -72,7 +86,7 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="input"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-luxury-500 focus:border-luxury-500"
               placeholder="Ingresa tu usuario"
               required
             />
@@ -88,7 +102,7 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="input pr-12"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-luxury-500 focus:border-luxury-500 pr-12"
                 placeholder="Ingresa tu contraseña"
                 required
               />
@@ -123,7 +137,7 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
             disabled={isLoading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="w-full btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-luxury-600 to-accent-600 text-white font-semibold py-3 px-4 rounded-lg hover:from-luxury-700 hover:to-accent-700 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
           >
             {isLoading ? (
               <>

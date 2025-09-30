@@ -10,10 +10,10 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import { exportProducts, importProducts } from '@/lib/productStorage'
 
 const DataManager = () => {
   const [isImporting, setIsImporting] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [importFile, setImportFile] = useState<File | null>(null)
   const [notification, setNotification] = useState<{
     type: 'success' | 'error' | 'warning'
@@ -25,10 +25,13 @@ const DataManager = () => {
     setTimeout(() => setNotification(null), 5000)
   }
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    setIsExporting(true)
     try {
-      const productsJson = exportProducts()
-      const blob = new Blob([productsJson], { type: 'application/json' })
+      const response = await fetch('/api/admin/export')
+      if (!response.ok) throw new Error('Error al exportar productos')
+      
+      const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       
       const a = document.createElement('a')
@@ -41,7 +44,10 @@ const DataManager = () => {
       
       showNotification('success', 'Productos exportados correctamente')
     } catch (error) {
+      console.error('Error al exportar:', error)
       showNotification('error', 'Error al exportar productos')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -51,10 +57,21 @@ const DataManager = () => {
     setIsImporting(true)
     try {
       const text = await importFile.text()
-      const success = await importProducts(text)
+      const data = JSON.parse(text)
       
-      if (success) {
-        showNotification('success', 'Productos importados correctamente')
+      const response = await fetch('/api/admin/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          products: data.products || data,
+          clearExisting: false
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        showNotification('success', result.message || 'Productos importados correctamente')
         // Recargar la página para mostrar los cambios
         setTimeout(() => window.location.reload(), 1000)
       } else {
@@ -125,12 +142,22 @@ const DataManager = () => {
         
         <motion.button
           onClick={handleExport}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="btn-primary flex items-center space-x-2"
+          disabled={isExporting}
+          whileHover={{ scale: isExporting ? 1 : 1.02 }}
+          whileTap={{ scale: isExporting ? 1 : 0.98 }}
+          className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <DocumentArrowDownIcon className="h-5 w-5" />
-          <span>Exportar Productos</span>
+          {isExporting ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Exportando...</span>
+            </>
+          ) : (
+            <>
+              <DocumentArrowDownIcon className="h-5 w-5" />
+              <span>Exportar Productos</span>
+            </>
+          )}
         </motion.button>
       </div>
 

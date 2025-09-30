@@ -8,9 +8,38 @@ import ProductGrid from '@/components/ProductGrid'
 import { useProducts } from '@/hooks/useProducts'
 
 const HomePage = () => {
-  const { products } = useProducts()
-  const featuredProducts = products.filter(product => product.featured)
-  const newProducts = products.filter(product => product.isNew)
+  const { products, loading, error } = useProducts()
+
+  // Evitar acceder a products si está cargando o hay un error
+  const featuredProducts = !loading && !error ? products.filter(product => product.featured) : []
+  const newProducts = !loading && !error ? products.filter(product => product.newProduct) : []
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-600">Cargando productos...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="btn-primary"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const categories = [
     {

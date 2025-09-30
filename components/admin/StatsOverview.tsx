@@ -7,18 +7,43 @@ import {
   UsersIcon, 
   ChartBarIcon,
   EyeIcon,
-  HeartIcon
+  HeartIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useProducts } from '@/hooks/useProducts'
 
 const StatsOverview = () => {
-  const { products } = useProducts()
+  const { products, loading, error } = useProducts()
+  
+  // Mostrar estado de carga
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-luxury-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-luxury-600">Cargando estadísticas...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <ExclamationTriangleIcon className="w-12 h-12 text-red-500 mx-auto" />
+          <p className="text-red-600">Error al cargar estadísticas: {error}</p>
+        </div>
+      </div>
+    )
+  }
   
   // Calcular estadísticas
   const totalProducts = products.length
-  const totalStock = products.reduce((sum, product) => sum + product.stock, 0)
-  const totalValue = products.reduce((sum, product) => sum + (product.price * product.stock), 0)
-  const outOfStock = products.filter(product => product.stock === 0).length
+  const totalStock = products.reduce((sum, product) => sum + (product.stock || 0), 0)
+  const totalValue = products.reduce((sum, product) => sum + ((product.price || 0) * (product.stock || 0)), 0)
+  const outOfStock = products.filter(product => !product.stock || product.stock === 0).length
   const lowStock = products.filter(product => product.stock > 0 && product.stock < 5).length
 
   const formatPrice = (price: number) => {
@@ -66,7 +91,7 @@ const StatsOverview = () => {
   ]
 
   const recentProducts = products
-    .filter(product => product.isNew)
+    .filter(product => product.newProduct)
     .slice(0, 5)
 
   const lowStockProducts = products

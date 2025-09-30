@@ -1,23 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { Product } from '@/types'
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  // Refrescar productos con useCallback para evitar re-renders
-  const refreshProducts = useCallback(async () => {
-    try {
-      const response = await fetch('/api/products')
-      if (!response.ok) throw new Error('Error al refrescar productos')
-      const data = await response.json()
-      setProducts(data)
-    } catch (err) {
-      setError('Error al refrescar productos')
-      console.error('Error refreshing products:', err)
-    }
-  }, [])
 
   // Cargar productos desde la API
   useEffect(() => {
@@ -27,24 +14,16 @@ export const useProducts = () => {
       try {
         console.log('Iniciando carga de productos...')
         const response = await fetch('/api/products')
-        const data = await response.json()
-        
         if (!response.ok) {
-          throw new Error(data.message || 'Error al cargar productos')
+          throw new Error('Error al cargar productos')
         }
-        
-        // Verificar que los datos son un array
-        if (!Array.isArray(data)) {
-          console.log('Datos recibidos (no array):', data)
-          throw new Error('Formato de datos inválido')
-        }
-        
+        const data = await response.json()
         console.log('Productos cargados:', data.length)
         setProducts(data)
       } catch (err) {
         console.error('Error detallado al cargar productos:', err)
         setError(err instanceof Error ? err.message : 'Error al cargar productos')
-        setProducts([]) // Inicializar con array vacío en caso de error
+        setProducts([])
       } finally {
         setLoading(false)
       }
@@ -52,6 +31,19 @@ export const useProducts = () => {
 
     fetchProducts()
   }, [])
+
+  // Refrescar productos
+  const refreshProducts = async () => {
+    try {
+      const response = await fetch('/api/products')
+      if (!response.ok) throw new Error('Error al refrescar productos')
+      const data = await response.json()
+      setProducts(data)
+    } catch (err) {
+      setError('Error al refrescar productos')
+      console.error('Error refreshing products:', err)
+    }
+  }
 
   // Agregar producto
   const handleAddProduct = async (productData: Omit<Product, 'id'>): Promise<Product | null> => {
@@ -107,6 +99,31 @@ export const useProducts = () => {
       setError('Error al eliminar producto')
       console.error('Error deleting product:', err)
       return false
+    }
+  }
+
+  // Buscar productos
+  const handleSearchProducts = (query: string, category?: 'men' | 'women' | 'kids-boys' | 'kids-girls'): Product[] => {
+    try {
+      let filteredProducts = products
+      
+      if (category) {
+        filteredProducts = filteredProducts.filter(product => product.category === category)
+      }
+      
+      if (query) {
+        filteredProducts = filteredProducts.filter(product => 
+          product.name.toLowerCase().includes(query.toLowerCase()) ||
+          product.description.toLowerCase().includes(query.toLowerCase()) ||
+          product.subcategory.toLowerCase().includes(query.toLowerCase())
+        )
+      }
+      
+      return filteredProducts
+    } catch (err) {
+      setError('Error en la búsqueda')
+      console.error('Error searching products:', err)
+      return []
     }
   }
 

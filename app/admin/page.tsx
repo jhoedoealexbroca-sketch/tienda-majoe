@@ -17,18 +17,52 @@ import AdminAuth from '@/components/admin/AdminAuth'
 import ProductManager from '@/components/admin/ProductManager'
 import StatsOverview from '@/components/admin/StatsOverview'
 import DataManager from '@/components/admin/DataManager'
+import ErrorBoundary from '@/components/admin/ErrorBoundary'
 
-const AdminPage = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [activeTab, setActiveTab] = useState('overview')
+function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [activeTab, setActiveTab] = useState<string>('overview')
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    // Verificar si ya está autenticado
-    const adminAuth = localStorage.getItem('admin_authenticated')
-    if (adminAuth === 'true') {
-      setIsAuthenticated(true)
+    console.log('AdminPage: Iniciando verificación de autenticación')
+    
+    const checkAuth = () => {
+      try {
+        // Verificar que estamos en el navegador antes de usar localStorage
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const adminAuth = localStorage.getItem('admin_authenticated')
+          console.log('AdminPage: Estado de autenticación:', adminAuth)
+          setIsAuthenticated(adminAuth === 'true')
+        } else {
+          console.warn('AdminPage: localStorage no disponible')
+          setIsAuthenticated(false)
+        }
+      } catch (error) {
+        console.error('AdminPage: Error al verificar autenticación:', error)
+        setIsAuthenticated(false)
+      } finally {
+        console.log('AdminPage: Finalizada verificación de autenticación')
+        setIsLoading(false)
+      }
     }
+
+    // Pequeño delay para asegurar que el componente esté montado
+    const timer = setTimeout(checkAuth, 100)
+    
+    return () => clearTimeout(timer)
   }, [])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-luxury-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return <AdminAuth onAuthenticated={() => setIsAuthenticated(true)} />
@@ -42,8 +76,19 @@ const AdminPage = () => {
   ]
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated')
-    setIsAuthenticated(false)
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('admin_authenticated')
+      }
+      setIsAuthenticated(false)
+      setActiveTab('overview')
+      console.log('Sesión cerrada correctamente')
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error)
+      // Forzar logout incluso si hay error con localStorage
+      setIsAuthenticated(false)
+      setActiveTab('overview')
+    }
   }
 
   return (
@@ -99,20 +144,22 @@ const AdminPage = () => {
 
         {/* Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-luxury-100 p-6">
-          {activeTab === 'overview' && <StatsOverview />}
-          {activeTab === 'products' && <ProductManager />}
-          {activeTab === 'data' && <DataManager />}
-          {activeTab === 'orders' && (
-            <div className="text-center py-12">
-              <ShoppingBagIcon className="h-16 w-16 text-luxury-300 mx-auto mb-4" />
-              <h3 className="text-lg font-display font-semibold text-dark-800 mb-2">
-                Gestión de Pedidos
-              </h3>
-              <p className="text-luxury-600">
-                Próximamente: Sistema de gestión de pedidos y clientes
-              </p>
-            </div>
-          )}
+          <ErrorBoundary>
+            {activeTab === 'overview' && <StatsOverview />}
+            {activeTab === 'products' && <ProductManager />}
+            {activeTab === 'data' && <DataManager />}
+            {activeTab === 'orders' && (
+              <div className="text-center py-12">
+                <ShoppingBagIcon className="h-16 w-16 text-luxury-300 mx-auto mb-4" />
+                <h3 className="text-lg font-display font-semibold text-dark-800 mb-2">
+                  Gestión de Pedidos
+                </h3>
+                <p className="text-luxury-600">
+                  Próximamente: Sistema de gestión de pedidos y clientes
+                </p>
+              </div>
+            )}
+          </ErrorBoundary>
         </div>
       </div>
     </div>

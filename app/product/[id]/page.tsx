@@ -20,7 +20,7 @@ import { HeartIcon as HeartIconSolid, StarIcon as StarIconSolid } from '@heroico
 import Link from 'next/link'
 import { useCartStore } from '@/store/cart'
 import ProductGrid from '@/components/ProductGrid'
-import { getProductById, getProducts } from '@/lib/productStorage'
+import { getProductById, getProducts } from '@/lib/hybridStorage'
 import { Product } from '@/types'
 
 const ProductDetailPage = () => {
@@ -35,21 +35,34 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   
   const { addItem } = useCartStore()
 
   // Cargar producto y productos relacionados
   useEffect(() => {
-    const loadProduct = () => {
-      const foundProduct = getProductById(productId)
-      setProduct(foundProduct || null)
-      
-      if (foundProduct) {
-        const allProducts = getProducts()
-        const related = allProducts
-          .filter(p => p.id !== productId && p.category === foundProduct.category)
-          .slice(0, 4)
-        setRelatedProducts(related)
+    const loadProduct = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const foundProduct = await getProductById(productId)
+        setProduct(foundProduct)
+        
+        if (foundProduct) {
+          const allProducts = await getProducts()
+          const related = allProducts
+            .filter(p => p.id !== productId && p.category === foundProduct.category)
+            .slice(0, 4)
+          setRelatedProducts(related)
+        } else {
+          setError('Producto no encontrado')
+        }
+      } catch (error) {
+        console.error('Error loading product:', error)
+        setError('Error al cargar el producto')
+      } finally {
+        setIsLoading(false)
       }
     }
     
@@ -67,12 +80,23 @@ const ProductDetailPage = () => {
     }
   }, [product])
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <div className="pt-20 min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-gray-600">Cargando producto...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !product) {
     return (
       <div className="pt-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-display font-bold text-gray-900 mb-4">
-            Producto no encontrado
+            {error || 'Producto no encontrado'}
           </h1>
           <Link href="/" className="btn-primary">
             Volver al inicio
@@ -184,7 +208,7 @@ const ProductDetailPage = () => {
 
               {/* Badges */}
               <div className="absolute top-6 left-6 flex flex-col space-y-2">
-                {product.isNew && (
+                {product.newProduct && (
                   <span className="badge-new">Nuevo</span>
                 )}
                 {product.onSale && (

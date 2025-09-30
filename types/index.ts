@@ -11,7 +11,7 @@ export interface Product {
   colors: Color[];
   stock: number;
   featured?: boolean;
-  isNew?: boolean;
+  newProduct?: boolean;
   onSale?: boolean;
 }
 
