@@ -138,15 +138,6 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
             )}
           </motion.button>
         </form>
-
-        {/* Demo Credentials */}
-        <div className="mt-6 p-4 bg-luxury-50 rounded-lg border border-luxury-200">
-          <p className="text-xs text-luxury-600 font-medium mb-2">Credenciales de demostración:</p>
-          <div className="text-xs space-y-1">
-            <div><strong>Usuario:</strong> admin</div>
-            <div><strong>Contraseña:</strong> majoe2024</div>
-          </div>
-        </div>
       </motion.div>
     </div>
   )
