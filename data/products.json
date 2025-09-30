@@ -1,0 +1,226 @@
+[
+  {
+    "id": "1",
+    "name": "Camiseta Premium Básica",
+    "price": 89.99,
+    "originalPrice": 119.99,
+    "description": "Camiseta de algodón 100% orgánico con corte moderno y ajuste perfecto. Suave al tacto y resistente al lavado.",
+    "category": "men",
+    "subcategory": "camisetas",
+    "images": [
+      "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800",
+      "https://images.unsplash.com/photo-1583743814966-8936f37f4678?w=800",
+      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800"
+    ],
+    "sizes": [
+      {"name": "S", "value": "s", "available": true},
+      {"name": "M", "value": "m", "available": true},
+      {"name": "L", "value": "l", "available": true},
+      {"name": "XL", "value": "xl", "available": false}
+    ],
+    "colors": [
+      {"name": "Negro", "value": "#000000", "available": true},
+      {"name": "Blanco", "value": "#FFFFFF", "available": true},
+      {"name": "Azul Marino", "value": "#1e3a8a", "available": true}
+    ],
+    "stock": 25,
+    "featured": true,
+    "isNew": false,
+    "onSale": true
+  },
+  {
+    "id": "2",
+    "name": "Jeans Slim Fit Premium",
+    "price": 199.99,
+    "description": "Jeans de mezclilla premium con corte slim fit. Diseño moderno con detalles únicos y máxima comodidad.",
+    "category": "men",
+    "subcategory": "pantalones",
+    "images": [
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?w=800",
+      "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=800",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800"
+    ],
+    "sizes": [
+      {"name": "30", "value": "30", "available": true},
+      {"name": "32", "value": "32", "available": true},
+      {"name": "34", "value": "34", "available": true},
+      {"name": "36", "value": "36", "available": true}
+    ],
+    "colors": [
+      {"name": "Azul Clásico", "value": "#4f46e5", "available": true},
+      {"name": "Negro", "value": "#000000", "available": true}
+    ],
+    "stock": 18,
+    "featured": true,
+    "isNew": true,
+    "onSale": false
+  },
+  {
+    "id": "3",
+    "name": "Vestido Elegante Midi",
+    "price": 159.99,
+    "originalPrice": 199.99,
+    "description": "Vestido midi elegante perfecto para ocasiones especiales. Tela fluida y corte favorecedor para todas las siluetas.",
+    "category": "women",
+    "subcategory": "vestidos",
+    "images": [
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=800",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800"
+    ],
+    "sizes": [
+      {"name": "XS", "value": "xs", "available": true},
+      {"name": "S", "value": "s", "available": true},
+      {"name": "M", "value": "m", "available": true},
+      {"name": "L", "value": "l", "available": false}
+    ],
+    "colors": [
+      {"name": "Rosa Polvoso", "value": "#f8bbd9", "available": true},
+      {"name": "Negro", "value": "#000000", "available": true},
+      {"name": "Azul Marino", "value": "#1e3a8a", "available": true}
+    ],
+    "stock": 12,
+    "featured": true,
+    "isNew": false,
+    "onSale": true
+  },
+  {
+    "id": "4",
+    "name": "Blusa Casual Moderna",
+    "price": 79.99,
+    "description": "Blusa casual con diseño moderno y versátil. Perfecta para el día a día o para combinar en looks más formales.",
+    "category": "women",
+    "subcategory": "blusas",
+    "images": [
+      "https://images.unsplash.com/photo-1564859228273-274232fdb516?w=800",
+      "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=800",
+      "https://images.unsplash.com/photo-1571513722275-4b41940f54b8?w=800"
+    ],
+    "sizes": [
+      {"name": "S", "value": "s", "available": true},
+      {"name": "M", "value": "m", "available": true},
+      {"name": "L", "value": "l", "available": true}
+    ],
+    "colors": [
+      {"name": "Blanco", "value": "#FFFFFF", "available": true},
+      {"name": "Beige", "value": "#f5f5dc", "available": true},
+      {"name": "Rosa", "value": "#ffc0cb", "available": true}
+    ],
+    "stock": 30,
+    "featured": false,
+    "isNew": true,
+    "onSale": false
+  },
+  {
+    "id": "5",
+    "name": "Chaqueta Deportiva Premium",
+    "price": 249.99,
+    "description": "Chaqueta deportiva de alta calidad con tecnología transpirable. Ideal para entrenamientos y uso casual.",
+    "category": "men",
+    "subcategory": "chaquetas",
+    "images": [
+      "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=800",
+      "https://images.unsplash.com/photo-1506629905607-d405872dcd17?w=800",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800"
+    ],
+    "sizes": [
+      {"name": "M", "value": "m", "available": true},
+      {"name": "L", "value": "l", "available": true},
+      {"name": "XL", "value": "xl", "available": true}
+    ],
+    "colors": [
+      {"name": "Negro", "value": "#000000", "available": true},
+      {"name": "Gris", "value": "#6b7280", "available": true}
+    ],
+    "stock": 8,
+    "featured": false,
+    "isNew": true,
+    "onSale": false
+  },
+  {
+    "id": "6",
+    "name": "Falda Plisada Elegante",
+    "price": 119.99,
+    "originalPrice": 149.99,
+    "description": "Falda plisada con diseño elegante y moderno. Perfecta para ocasiones formales o casuales sofisticadas.",
+    "category": "women",
+    "subcategory": "faldas",
+    "images": [
+      "https://images.unsplash.com/photo-1583496661160-fb5886a13d27?w=800",
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=800",
+      "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=800"
+    ],
+    "sizes": [
+      {"name": "XS", "value": "xs", "available": true},
+      {"name": "S", "value": "s", "available": true},
+      {"name": "M", "value": "m", "available": true},
+      {"name": "L", "value": "l", "available": true}
+    ],
+    "colors": [
+      {"name": "Negro", "value": "#000000", "available": true},
+      {"name": "Camel", "value": "#c19a6b", "available": true},
+      {"name": "Azul Marino", "value": "#1e3a8a", "available": false}
+    ],
+    "stock": 15,
+    "featured": false,
+    "isNew": false,
+    "onSale": true
+  },
+  {
+    "id": "7",
+    "name": "Camiseta Divertida Niños",
+    "price": 45.99,
+    "description": "Camiseta colorida y divertida para niños. Diseño alegre con estampados únicos que les encantarán.",
+    "category": "kids-boys",
+    "subcategory": "camisetas",
+    "images": [
+      "https://images.unsplash.com/photo-1503944583220-79d8926ad5e2?w=800",
+      "https://images.unsplash.com/photo-1581783898377-1c85bf937427?w=800"
+    ],
+    "sizes": [
+      {"name": "4", "value": "4", "available": true},
+      {"name": "6", "value": "6", "available": true},
+      {"name": "8", "value": "8", "available": true},
+      {"name": "10", "value": "10", "available": true},
+      {"name": "12", "value": "12", "available": false}
+    ],
+    "colors": [
+      {"name": "Azul", "value": "#3b82f6", "available": true},
+      {"name": "Verde", "value": "#10b981", "available": true},
+      {"name": "Rojo", "value": "#ef4444", "available": true}
+    ],
+    "stock": 20,
+    "featured": true,
+    "isNew": true,
+    "onSale": false
+  },
+  {
+    "id": "8",
+    "name": "Vestido Princesa Niñas",
+    "price": 89.99,
+    "originalPrice": 119.99,
+    "description": "Hermoso vestido estilo princesa para niñas. Perfecto para fiestas y ocasiones especiales.",
+    "category": "kids-girls",
+    "subcategory": "vestidos",
+    "images": [
+      "https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=800",
+      "https://images.unsplash.com/photo-1519238263530-99bdd11df2ea?w=800"
+    ],
+    "sizes": [
+      {"name": "4", "value": "4", "available": true},
+      {"name": "6", "value": "6", "available": true},
+      {"name": "8", "value": "8", "available": true},
+      {"name": "10", "value": "10", "available": true}
+    ],
+    "colors": [
+      {"name": "Rosa", "value": "#ec4899", "available": true},
+      {"name": "Morado", "value": "#8b5cf6", "available": true},
+      {"name": "Celeste", "value": "#06b6d4", "available": true}
+    ],
+    "stock": 12,
+    "featured": true,
+    "isNew": false,
+    "onSale": true
+  }
+]
+
