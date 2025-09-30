@@ -5,9 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { HeartIcon, EyeIcon } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Product } from '@/types'
-import { getProducts } from '@/lib/hybridStorage'
 
 interface ProductGridProps {
   products: Product[]
