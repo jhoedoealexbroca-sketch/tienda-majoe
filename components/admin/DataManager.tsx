@@ -10,7 +10,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
-import { exportProducts, importProducts } from '@/lib/simpleStorage'
+import { exportProducts, importProducts } from '@/lib/productStorage'
 
 const DataManager = () => {
   const [isImporting, setIsImporting] = useState(false)

@@ -42,7 +42,7 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const loadProduct = () => {
       const foundProduct = getProductById(productId)
-      setProduct(foundProduct)
+      setProduct(foundProduct || null)
       
       if (foundProduct) {
         const allProducts = getProducts()

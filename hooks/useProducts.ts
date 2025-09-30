@@ -4,9 +4,8 @@ import {
   getProducts, 
   addProduct, 
   updateProduct, 
-  deleteProduct, 
-  saveProducts 
-} from '@/lib/simpleStorage'
+  deleteProduct
+} from '@/lib/productStorage'
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([])

@@ -4,12 +4,59 @@ import productsData from '@/data/products.json'
 
 const STORAGE_KEY = 'majoe_products'
 
+// Función para validar la categoría del producto
+const isValidCategory = (category: string): category is Product['category'] => {
+  return ['men', 'women', 'kids-boys', 'kids-girls'].includes(category)
+}
+
+// Función para validar y convertir un producto
+const validateProduct = (product: any): Product => {
+  if (!product || typeof product !== 'object') throw new Error('Invalid product data')
+
+  if (!isValidCategory(product.category)) {
+    throw new Error(`Invalid category: ${product.category}`)
+  }
+
+  return {
+    id: String(product.id),
+    name: String(product.name),
+    price: Number(product.price),
+    originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
+    description: String(product.description),
+    category: product.category,
+    subcategory: String(product.subcategory),
+    images: Array.isArray(product.images) ? product.images.map(String) : [],
+    sizes: Array.isArray(product.sizes) ? product.sizes : [],
+    colors: Array.isArray(product.colors) ? product.colors : [],
+    stock: Number(product.stock),
+    featured: Boolean(product.featured),
+    isNew: Boolean(product.isNew),
+    onSale: Boolean(product.onSale)
+  }
+}
+
+// Función para validar un array de productos
+const validateProducts = (products: any[]): Product[] => {
+  return products.map(validateProduct)
+}
+
+// Validar productos iniciales
+const getValidatedInitialProducts = (): Product[] => {
+  try {
+    return validateProducts(productsData)
+  } catch (error) {
+    console.error('Error validating initial products:', error)
+    return []
+  }
+}
+
 // Inicializar productos si no existen
 const initializeProducts = () => {
   if (typeof window !== 'undefined') {
     const existingProducts = localStorage.getItem(STORAGE_KEY)
     if (!existingProducts) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData))
+      const validatedProducts = getValidatedInitialProducts()
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(validatedProducts))
     }
   }
 }
@@ -20,19 +67,20 @@ if (typeof window !== 'undefined') {
 }
 
 export const getProducts = (): Product[] => {
-  if (typeof window === 'undefined') return productsData
+  if (typeof window === 'undefined') return getValidatedInitialProducts()
   
   const productsJson = localStorage.getItem(STORAGE_KEY)
   if (productsJson) {
     try {
-      return JSON.parse(productsJson)
+      const parsedProducts = JSON.parse(productsJson)
+      return validateProducts(parsedProducts)
     } catch (error) {
       console.error('Error parsing products:', error)
-      return productsData
+      return getValidatedInitialProducts()
     }
   }
   
-  return productsData
+  return getValidatedInitialProducts()
 }
 
 export const getProductById = (id: string): Product | undefined => {

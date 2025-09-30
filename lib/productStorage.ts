@@ -1,88 +1,144 @@
 import { Product } from '@/types'
+import { v4 as uuidv4 } from 'uuid'
 import productsData from '@/data/products.json'
 
 const STORAGE_KEY = 'majoe_products'
+const BACKUP_KEY = 'majoe_products_backup'
 
-// Inicializar productos si no existen en localStorage
-const initializeProducts = (): Product[] => {
-  if (typeof window === 'undefined') return productsData as Product[]
-  
-  const stored = localStorage.getItem(STORAGE_KEY)
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData))
-    return productsData as Product[]
+// Función para validar la categoría del producto
+const isValidCategory = (category: string): category is Product['category'] => {
+  return ['men', 'women', 'kids-boys', 'kids-girls'].includes(category)
+}
+
+// Función para validar y convertir un producto
+const validateProduct = (product: any): Product => {
+  if (!product || typeof product !== 'object') throw new Error('Invalid product data')
+
+  if (!isValidCategory(product.category)) {
+    throw new Error(`Invalid category: ${product.category}`)
   }
-  return JSON.parse(stored)
+
+  return {
+    id: String(product.id || uuidv4()),
+    name: String(product.name),
+    price: Number(product.price),
+    originalPrice: product.originalPrice ? Number(product.originalPrice) : undefined,
+    description: String(product.description),
+    category: product.category,
+    subcategory: String(product.subcategory),
+    images: Array.isArray(product.images) ? product.images.map(String) : [],
+    sizes: Array.isArray(product.sizes) ? product.sizes : [],
+    colors: Array.isArray(product.colors) ? product.colors : [],
+    stock: Number(product.stock),
+    featured: Boolean(product.featured),
+    isNew: Boolean(product.isNew),
+    onSale: Boolean(product.onSale)
+  }
 }
 
-// Obtener todos los productos
-export const getProducts = (): Product[] => {
-  if (typeof window === 'undefined') return productsData as Product[]
-  return initializeProducts()
+// Función para validar un array de productos
+const validateProducts = (products: any[]): Product[] => {
+  return products.map(validateProduct)
 }
 
-// Guardar productos
-export const saveProducts = (products: Product[]): void => {
+// Función para sincronizar con almacenamiento
+const syncWithStorage = (products: Product[]): void => {
   if (typeof window === 'undefined') return
   localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
+  localStorage.setItem(BACKUP_KEY, JSON.stringify(products))
 }
 
-// Agregar nuevo producto
-export const addProduct = (product: Omit<Product, 'id'>): Product => {
-  const products = getProducts()
-  const newProduct: Product = {
-    ...product,
-    id: Date.now().toString() // ID simple basado en timestamp
+// Inicializar productos
+const initializeProducts = (): void => {
+  if (typeof window === 'undefined') return
+  
+  const existingProducts = localStorage.getItem(STORAGE_KEY)
+  if (!existingProducts) {
+    const validatedProducts = validateProducts(productsData)
+    syncWithStorage(validatedProducts)
+  }
+}
+
+// Inicializar al cargar el módulo
+if (typeof window !== 'undefined') {
+  initializeProducts()
+}
+
+// Funciones exportadas
+export const getProducts = (): Product[] => {
+  if (typeof window === 'undefined') return validateProducts(productsData)
+  
+  const productsJson = localStorage.getItem(STORAGE_KEY)
+  if (productsJson) {
+    try {
+      const parsedProducts = JSON.parse(productsJson)
+      return validateProducts(parsedProducts)
+    } catch (error) {
+      console.error('Error parsing products:', error)
+      return validateProducts(productsData)
+    }
   }
   
+  return validateProducts(productsData)
+}
+
+export const getProductById = (id: string): Product | undefined => {
+  const products = getProducts()
+  return products.find(product => product.id === id)
+}
+
+export const addProduct = (productData: Omit<Product, 'id'>): Product => {
+  const newProduct = validateProduct({
+    ...productData,
+    id: uuidv4()
+  })
+  
+  const products = getProducts()
   const updatedProducts = [...products, newProduct]
-  saveProducts(updatedProducts)
+  syncWithStorage(updatedProducts)
   return newProduct
 }
 
-// Actualizar producto existente
-export const updateProduct = (id: string, updates: Partial<Product>): Product | null => {
+export const updateProduct = (id: string, productData: Partial<Product>): Product | undefined => {
   const products = getProducts()
   const index = products.findIndex(p => p.id === id)
   
-  if (index === -1) return null
+  if (index === -1) return undefined
   
-  const updatedProduct = { ...products[index], ...updates }
-  const updatedProducts = [...products]
-  updatedProducts[index] = updatedProduct
+  const updatedProduct = validateProduct({
+    ...products[index],
+    ...productData,
+    id // Mantener el ID original
+  })
   
-  saveProducts(updatedProducts)
+  products[index] = updatedProduct
+  syncWithStorage(products)
   return updatedProduct
 }
 
-// Eliminar producto
 export const deleteProduct = (id: string): boolean => {
   const products = getProducts()
   const filteredProducts = products.filter(p => p.id !== id)
   
   if (filteredProducts.length === products.length) return false
   
-  saveProducts(filteredProducts)
+  syncWithStorage(filteredProducts)
   return true
 }
 
-// Obtener producto por ID
-export const getProductById = (id: string): Product | null => {
+export const exportProducts = (): string => {
   const products = getProducts()
-  return products.find(p => p.id === id) || null
+  return JSON.stringify(products, null, 2)
 }
 
-// Buscar productos
-export const searchProducts = (query: string, category?: 'men' | 'women'): Product[] => {
-  const products = getProducts()
-  return products.filter(product => {
-    const matchesQuery = query === '' || 
-      product.name.toLowerCase().includes(query.toLowerCase()) ||
-      product.subcategory.toLowerCase().includes(query.toLowerCase()) ||
-      product.description.toLowerCase().includes(query.toLowerCase())
-    
-    const matchesCategory = !category || product.category === category
-    
-    return matchesQuery && matchesCategory
-  })
+export const importProducts = (jsonString: string): boolean => {
+  try {
+    const products = JSON.parse(jsonString)
+    const validatedProducts = validateProducts(products)
+    syncWithStorage(validatedProducts)
+    return true
+  } catch (error) {
+    console.error('Error importing products:', error)
+    return false
+  }
 }
