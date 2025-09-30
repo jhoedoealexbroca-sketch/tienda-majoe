@@ -5,8 +5,8 @@ import {
   addProduct, 
   updateProduct, 
   deleteProduct, 
-  searchProducts 
-} from '@/lib/productStorage'
+  saveProducts 
+} from '@/lib/hybridStorage'
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([])

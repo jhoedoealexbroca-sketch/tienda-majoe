@@ -10,11 +10,13 @@ import {
   EyeIcon,
   ChartBarIcon,
   ShoppingBagIcon,
-  UsersIcon
+  UsersIcon,
+  DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
 import AdminAuth from '@/components/admin/AdminAuth'
 import ProductManager from '@/components/admin/ProductManager'
 import StatsOverview from '@/components/admin/StatsOverview'
+import DataManager from '@/components/admin/DataManager'
 
 const AdminPage = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -35,6 +37,7 @@ const AdminPage = () => {
   const tabs = [
     { id: 'overview', name: 'Resumen', icon: ChartBarIcon },
     { id: 'products', name: 'Productos', icon: ShoppingBagIcon },
+    { id: 'data', name: 'Datos', icon: DocumentArrowDownIcon },
     { id: 'orders', name: 'Pedidos', icon: UsersIcon },
   ]
 
@@ -98,6 +101,7 @@ const AdminPage = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-luxury-100 p-6">
           {activeTab === 'overview' && <StatsOverview />}
           {activeTab === 'products' && <ProductManager />}
+          {activeTab === 'data' && <DataManager />}
           {activeTab === 'orders' && (
             <div className="text-center py-12">
               <ShoppingBagIcon className="h-16 w-16 text-luxury-300 mx-auto mb-4" />
