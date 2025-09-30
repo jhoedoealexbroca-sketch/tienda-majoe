@@ -34,7 +34,7 @@ const MenPage = () => {
       case 'name':
         return a.name.localeCompare(b.name)
       case 'newest':
-        return b.isNew ? 1 : -1
+        return b.newProduct ? 1 : -1
       default:
         return b.featured ? 1 : -1
     }

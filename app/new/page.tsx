@@ -6,7 +6,7 @@ import { useProducts } from '@/hooks/useProducts'
 
 const NewPage = () => {
   const { products } = useProducts()
-  const newProducts = products.filter(product => product.isNew)
+  const newProducts = products.filter(product => product.newProduct)
 
   return (
     <div className="pt-20">
