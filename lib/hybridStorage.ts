@@ -24,16 +24,24 @@ const initializeProducts = () => {
     const existingProducts = localStorage.getItem(STORAGE_KEY)
     if (!existingProducts) {
       // Cargar productos iniciales desde el archivo JSON
-      import('@/data/products.json').then((productsData) => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData.default))
-        syncWithRemote(productsData.default)
-      })
+      try {
+        import('@/data/products.json').then((productsData) => {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(productsData.default))
+          syncWithRemote(productsData.default)
+        }).catch((error) => {
+          console.error('Error loading initial products:', error)
+        })
+      } catch (error) {
+        console.error('Error initializing products:', error)
+      }
     }
   }
 }
 
 // Inicializar al cargar el módulo
-initializeProducts()
+if (typeof window !== 'undefined') {
+  initializeProducts()
+}
 
 export const getProducts = (): Product[] => {
   if (typeof window === 'undefined') return []

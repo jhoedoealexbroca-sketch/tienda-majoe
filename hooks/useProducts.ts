@@ -6,7 +6,7 @@ import {
   updateProduct, 
   deleteProduct, 
   saveProducts 
-} from '@/lib/hybridStorage'
+} from '@/lib/simpleStorage'
 
 export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([])
